@@ -21,6 +21,12 @@ public class StockService {
         return stockRepository.findById(id);
     }
 
+    public Optional<Stock> getStockByProductoId(Long productoId) {
+        return stockRepository.findAll().stream()
+                .filter(stock -> stock.getProductoId().equals(productoId))
+                .findFirst();
+    }
+
     public Stock saveStock(Stock stock) {
         return stockRepository.save(stock);
     }
