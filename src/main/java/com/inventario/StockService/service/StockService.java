@@ -2,7 +2,6 @@ package com.inventario.StockService.service;
 
 import com.inventario.StockService.entity.Stock;
 import com.inventario.StockService.repository.StockRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,8 +9,11 @@ import java.util.Optional;
 
 @Service
 public class StockService {
-    @Autowired
-    private StockRepository stockRepository;
+    private final StockRepository stockRepository;
+    
+    public StockService(StockRepository stockRepository) {
+        this.stockRepository = stockRepository;
+    }
 
     public List<Stock> getAllStock() {
         return stockRepository.findAll();
@@ -22,9 +24,8 @@ public class StockService {
     }
 
     public Optional<Stock> getStockByProductoId(Long productoId) {
-        return stockRepository.findAll().stream()
-                .filter(stock -> stock.getProductoId().equals(productoId))
-                .findFirst();
+        List<Stock> stocks = stockRepository.findByProductoId(productoId);
+        return stocks.isEmpty() ? Optional.empty() : Optional.of(stocks.get(0));
     }
 
     public Stock saveStock(Stock stock) {

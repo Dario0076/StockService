@@ -1,8 +1,9 @@
 package com.inventario.StockService.controller;
 
+import com.inventario.StockService.dto.ProductoDTO;
+import com.inventario.StockService.dto.StockWithProductDTO;
 import com.inventario.StockService.entity.Stock;
 import com.inventario.StockService.service.StockService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -14,40 +15,39 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/stock")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class StockController {
-    @Autowired
-    private StockService stockService;
-    
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final StockService stockService;
+    private final RestTemplate restTemplate;
+
+    public StockController(StockService stockService, RestTemplate restTemplate) {
+        this.stockService = stockService;
+        this.restTemplate = restTemplate;
+    }
 
     @GetMapping
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getAllStock() {
+    public List<StockWithProductDTO> getAllStock() {
         List<Stock> stocks = stockService.getAllStock();
         return stocks.stream().map(stock -> {
-            Map<String, Object> stockWithProduct = new HashMap<>();
-            stockWithProduct.put("id", stock.getId());
-            stockWithProduct.put("productoId", stock.getProductoId());
-            stockWithProduct.put("cantidadActual", stock.getCantidadActual());
-            stockWithProduct.put("umbralMinimo", stock.getUmbralMinimo());
+            String nombreProducto;
             
             // Obtener nombre del producto
             try {
-                Map<String, Object> producto = restTemplate.getForObject(
+                ProductoDTO producto = restTemplate.getForObject(
                     "http://localhost:8084/productos/" + stock.getProductoId(), 
-                    Map.class
+                    ProductoDTO.class
                 );
-                if (producto != null) {
-                    stockWithProduct.put("nombreProducto", producto.get("nombre"));
-                } else {
-                    stockWithProduct.put("nombreProducto", "Producto no encontrado");
-                }
+                nombreProducto = (producto != null) ? producto.getNombre() : "Producto no encontrado";
             } catch (Exception e) {
-                stockWithProduct.put("nombreProducto", "Error al obtener nombre");
+                nombreProducto = "Error al obtener nombre";
             }
             
-            return stockWithProduct;
+            return new StockWithProductDTO(
+                stock.getId(),
+                stock.getProductoId(),
+                stock.getCantidadActual(),
+                stock.getUmbralMinimo(),
+                nombreProducto
+            );
         }).toList();
     }
 
