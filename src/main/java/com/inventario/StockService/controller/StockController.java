@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/stock")
+@CrossOrigin("*")
 public class StockController {
     private final StockService stockService;
     private final RestTemplate restTemplate;
