@@ -4,7 +4,6 @@ import com.inventario.StockService.dto.ProductoDTO;
 import com.inventario.StockService.dto.StockWithProductDTO;
 import com.inventario.StockService.entity.Stock;
 import com.inventario.StockService.service.StockService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -20,9 +19,6 @@ import java.util.Optional;
 public class StockController {
     private final StockService stockService;
     private final RestTemplate restTemplate;
-    
-    @Value("${productosservice.url}")
-    private String productosServiceUrl;
 
     public StockController(StockService stockService, RestTemplate restTemplate) {
         this.stockService = stockService;
@@ -38,7 +34,7 @@ public class StockController {
             // Obtener nombre del producto
             try {
                 ProductoDTO producto = restTemplate.getForObject(
-                    productosServiceUrl + "/productos/" + stock.getProductoId(), 
+                    "http://localhost:8084/productos/" + stock.getProductoId(), 
                     ProductoDTO.class
                 );
                 nombreProducto = (producto != null) ? producto.getNombre() : "Producto no encontrado";
